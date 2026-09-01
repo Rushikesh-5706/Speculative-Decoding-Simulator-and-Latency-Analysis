@@ -1,0 +1,6 @@
+{
+  "model_configs": {
+    "draft_model_id": "gpt2",
+    "target_model_id": "gpt2-large"
+  }
+}

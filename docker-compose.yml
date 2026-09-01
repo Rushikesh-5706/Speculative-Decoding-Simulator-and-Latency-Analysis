@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    image: rushi5706/speculative-decoding-simulator:latest
+    volumes:
+      - ./:/app
+      - hf_cache:/app/.hf_cache
+    env_file:
+      - .env
+    command: ["pytest", "tests/test_equivalence.py", "-v"]
+
+volumes:
+  hf_cache:
