@@ -190,11 +190,16 @@ def speculative_generate(
 
             total_accepted += accepted
 
-            # Append accepted draft tokens.
+            # Append accepted draft tokens plus the corrective/bonus token.
             new_tokens = draft_ids[:accepted]
-            # Always append corrective/bonus — it's always a valid target token.
             if corrective_or_bonus is not None:
                 new_tokens.append(corrective_or_bonus)
+
+            # Clip to the remaining budget. When tokens_remaining=1 and the
+            # draft token was accepted, we'd have [accepted_tok, bonus_tok]=2
+            # tokens but only 1 slot left — the bonus gets dropped here.
+            # Baseline stops at exactly max_new_tokens, so we must too.
+            new_tokens = new_tokens[:tokens_remaining]
 
             sequence_ids.extend(new_tokens)
             generated_count += len(new_tokens)
