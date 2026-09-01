@@ -72,11 +72,10 @@ def run_sweep(prompts: list, draft_model, target_model, tokenizer) -> list:
         rows.append({
             "prompt_id": pid,
             "domain": domain,
-            "method": "baseline",
             "n_draft": 0,
-            "latency_sec": bl["latency"],
-            "tokens_per_sec": bl["tokens_per_sec"],
             "acceptance_rate": 1.0,
+            "tokens_per_sec": bl["tokens_per_sec"],
+            "latency": bl["latency"],
         })
 
         for n in N_DRAFT_VALUES:
@@ -88,11 +87,10 @@ def run_sweep(prompts: list, draft_model, target_model, tokenizer) -> list:
             rows.append({
                 "prompt_id": pid,
                 "domain": domain,
-                "method": "speculative",
                 "n_draft": n,
-                "latency_sec": sp["latency"],
-                "tokens_per_sec": sp["tokens_per_sec"],
                 "acceptance_rate": sp["acceptance_rate"],
+                "tokens_per_sec": sp["tokens_per_sec"],
+                "latency": sp["latency"],
             })
 
     return rows
@@ -157,14 +155,14 @@ def main() -> None:
     os.makedirs(args.results_dir, exist_ok=True)
     out_path = os.path.join(args.results_dir, "sweep_metrics.csv")
     df = pd.DataFrame(rows, columns=[
-        "prompt_id", "domain", "method", "n_draft",
-        "latency_sec", "tokens_per_sec", "acceptance_rate",
+        "prompt_id", "domain", "n_draft",
+        "acceptance_rate", "tokens_per_sec", "latency",
     ])
     df.to_csv(out_path, index=False)
 
     print(f"\nDone. Total wall time: {elapsed:.1f}s")
     print(f"Results written to: {out_path}")
-    print(df.groupby(["domain", "method", "n_draft"])[["tokens_per_sec", "acceptance_rate"]].mean().round(3).to_string())
+    print(df.groupby(["domain", "n_draft"])[["tokens_per_sec", "acceptance_rate"]].mean().round(3).to_string())
 
 
 if __name__ == "__main__":

@@ -25,13 +25,14 @@ def compute_crossover(csv_path: str, out_path: str) -> dict:
     df = pd.read_csv(csv_path)
 
     # Validate expected columns
-    required = {"prompt_id", "domain", "method", "n_draft", "latency_sec", "tokens_per_sec", "acceptance_rate"}
+    required = {"prompt_id", "domain", "n_draft", "acceptance_rate", "tokens_per_sec", "latency"}
     missing = required - set(df.columns)
     if missing:
         raise ValueError(f"sweep_metrics.csv is missing columns: {missing}")
 
-    baseline_df = df[df["method"] == "baseline"]
-    speculative_df = df[df["method"] == "speculative"]
+    # n_draft==0 rows are baseline; everything else is speculative
+    baseline_df = df[df["n_draft"] == 0]
+    speculative_df = df[df["n_draft"] > 0]
 
     # Mean baseline tokens/sec per domain
     baseline_by_domain = (
