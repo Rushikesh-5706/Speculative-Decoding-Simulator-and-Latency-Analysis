@@ -1,5 +1,5 @@
 # Pinned at install time — exact versions used during development and CI
-# torch==2.1.0  transformers==4.40.0  pandas==2.2.2  pytest==7.4.4  numpy==1.26.4
+# torch==2.3.1  transformers==4.41.2  pandas==2.2.2  pytest==8.2.2  numpy==1.26.4
 torch>=2.1.0
 transformers>=4.40.0
 pandas>=2.0.0
