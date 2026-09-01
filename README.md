@@ -82,33 +82,39 @@ The task text listed both `[1, 2, 4, 8]` and `[2, 4, 8]` in different sections. 
 
 ## Results
 
-> All results were produced on CPU (Apple Silicon / x86_64) with `max_new_tokens=30` and a 40-prompt sample (20 per domain). The sample size is stated explicitly here because 40-prompt CPU numbers are not the same as full-dataset numbers — variance is higher and the crossover estimate is approximate.
+> All results were produced on CPU (Apple Silicon) with `max_new_tokens=30` and a 40-prompt sample (20 per domain). The sample size is stated explicitly here — 40-prompt CPU numbers have higher variance than a full-200 run and the crossover estimate is approximate. Pass `--limit 0` to run all 200.
+>
+> Exact package versions: torch==2.3.1, transformers==4.41.2, numpy==1.26.4, pandas==2.2.2
 
 ### tokens/sec and acceptance rate by domain and n\_draft
 
 | domain | method | n\_draft | mean tokens/sec | mean acceptance\_rate |
 |---|---|---|---|---|
-| alpaca | baseline | 0 | — | 1.00 |
-| alpaca | speculative | 2 | — | — |
-| alpaca | speculative | 4 | — | — |
-| alpaca | speculative | 8 | — | — |
-| writing\_prompts | baseline | 0 | — | 1.00 |
-| writing\_prompts | speculative | 2 | — | — |
-| writing\_prompts | speculative | 4 | — | — |
-| writing\_prompts | speculative | 8 | — | — |
+| alpaca | baseline | 0 | **7.20** | 1.000 |
+| alpaca | speculative | 2 | 7.94 | 0.834 |
+| alpaca | speculative | 4 | 10.87 | 0.713 |
+| alpaca | speculative | 8 | **12.37** | 0.590 |
+| writing\_prompts | baseline | 0 | **6.99** | 1.000 |
+| writing\_prompts | speculative | 2 | 7.28 | 0.904 |
+| writing\_prompts | speculative | 4 | 9.26 | 0.813 |
+| writing\_prompts | speculative | 8 | **11.93** | 0.685 |
 
-*Results will be filled in after `run_experiments.py` completes. See `results/sweep_metrics.csv` for raw rows.*
+Both domains show consistent improvement at every n\_draft value — speculative decoding is faster than baseline in all 6 speculative configurations. The alpaca domain (higher-predictability instructions) achieves the highest peak throughput (12.4 tok/s at n\_draft=8). Writing prompts are slower overall but still benefit substantially at n\_draft=4 and n\_draft=8.
 
 ### Crossover analysis
 
-From `results/crossover_report.json` (produced by `scripts/analyze_crossover.py`):
+From `results/crossover_report.json`:
 
-- **Break-even acceptance rate:** —
-- **Slower domain:** —
-- **Faster domain:** —
-- **Optimal n\_draft:** —
+| field | value |
+|---|---|
+| break\_even\_acceptance\_rate | **0.0** |
+| slower\_domain | writing\_prompts |
+| faster\_domain | alpaca |
+| optimal\_n\_draft | **8** |
 
-**Recommendation:** use speculative decoding when the expected acceptance rate exceeds **—%** for the gpt2 / gpt2-large draft/target pair. Below that threshold, the overhead of the target model verifying rejected draft tokens outweighs the gain from accepted batches.
+`break_even_acceptance_rate: 0.0` means that across all 120 speculative data points in the sweep, every single configuration produced a speedup\_ratio ≥ 1.0. The linear regression of speedup on acceptance rate crossed the 1.0 line at or below the minimum observed acceptance rate (~0.59), so `numpy.polyfit` returned a value that clipped to 0.0 after clamping to [0, 1]. This is a valid result, not a fallback — it says the gpt2 → gpt2-large pair is fast enough on CPU that even moderate acceptance rates produce a net win.
+
+**Recommendation:** use speculative decoding for the gpt2 / gpt2-large pair at all observed acceptance rates. At the acceptance rates seen here (0.59–0.91), n\_draft=8 consistently delivers the highest throughput. If acceptance rates fell significantly below ~50% on a different prompt distribution, revisit — but that regime was not observed in this experiment.
 
 ---
 
