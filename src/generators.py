@@ -1,8 +1,9 @@
 """
 generators.py — Baseline and speculative greedy text generators.
 
-Neither function calls model.generate(). Both drive the forward pass manually
-so we have full control over what gets measured and logged.
+Neither function uses the HuggingFace high-level generation API. Both drive
+the forward pass manually so we have full control over what gets measured and
+logged.
 """
 
 import logging
