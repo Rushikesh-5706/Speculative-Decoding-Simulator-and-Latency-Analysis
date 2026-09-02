@@ -78,7 +78,8 @@ def run_sweep(prompts: list, draft_model, target_model, tokenizer) -> list:
             "latency": bl["latency"],
         })
 
-        for n in N_DRAFT_VALUES:
+        n_drafts_to_run = N_DRAFT_VALUES + [16, 32] if domain == "writing_prompts" else N_DRAFT_VALUES
+        for n in n_drafts_to_run:
             logger.info("Running speculative n_draft=%d for prompt %s", n, pid)
             sp = speculative_generate(
                 draft_model, target_model, tokenizer, prompt,
