@@ -20,9 +20,8 @@ env/
 # Environment secrets
 .env
 
-# Results (generated at runtime — not committed)
-results/*.csv
-results/*.json
+# Results
+# (Output files committed for verification)
 
 # IDE
 .vscode/
